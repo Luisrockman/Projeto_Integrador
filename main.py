@@ -1,7 +1,20 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox, simpledialog
-import Impostos
+
+try:
+    import Impostos
+except Exception as e:
+    print(f"Aviso: não foi possível importar 'Impostos': {e}. Usando stub de teste.")
+    class _StubImpostos:
+        @staticmethod
+        def calculate_taxes(tipo_atividade, receita_mensal):
+            inss = round(receita_mensal * 0.05, 2)
+            icms = 0.0
+            iss = 0.0
+            total = round(inss + icms + iss, 2)
+            return {"INSS": inss, "ICMS": icms, "ISS": iss, "Total": total}
+    Impostos = _StubImpostos
 
 def nova_simulacao():
     # solicita renda mensal (float)
@@ -28,21 +41,75 @@ def nova_simulacao():
         messagebox.showerror("Erro", f"Ocorreu um erro durante o cálculo:\n{e}", parent=root)
 
 def ver_historico():
+    if not Historico:
+        messagebox.showinfo("Histórico", "Nenhuma simulação realizada ainda.", parent=root)
+        return
     
-    simulador = tk.Tk()
-    simulador.title("Módulo de Impostos MEI")
-    simulador.geometry("640x360")
-    simulador.configure(bg="#1e1e1e")
-    simulador.resizable(True,True)
-
-    style = ttk.Style()
-    style.theme_use('clam')
-
-    header_frame = tk.Frame(simulador, bg="#0d47a1", height=80)
+    janela_historico = tk.Toplevel(root)
+    janela_historico.title("Histórico de Simulações")
+    janela_historico.geometry("900x400")
+    janela_historico.configure(bg="#1e1e1e")
+    
+    # Header
+    header_frame = tk.Frame(janela_historico, bg="#0d47a1", height=60)
     header_frame.pack(fill="x", padx=0, pady=0)
     header_frame.pack_propagate(False)
     
-    simulador.mainloop()
+    title_label = tk.Label(header_frame, text="📋 Histórico de Simulações", 
+                          font=("Arial", 18, "bold"), bg="#0d47a1", fg="#FFFFFF")
+    title_label.pack(pady=10)
+    
+    # Criar frame para a tabela
+    table_frame = tk.Frame(janela_historico, bg="#1e1e1e")
+    table_frame.pack(fill="both", expand=True, padx=10, pady=10)
+    
+    # Criar Treeview (tabela)
+    columns = ("Simulação", "Renda Mensal", "INSS", "ICMS", "ISS", "Total")
+    tree = ttk.Treeview(table_frame, columns=columns, height=15, show='headings')
+    
+    # Definir cabeçalhos
+    tree.heading("Simulação", text="Simulação")
+    tree.heading("Renda Mensal", text="Renda Mensal")
+    tree.heading("INSS", text="INSS")
+    tree.heading("ICMS", text="ICMS")
+    tree.heading("ISS", text="ISS")
+    tree.heading("Total", text="Total")
+    
+    # Definir largura das colunas
+    tree.column("Simulação", width=80, anchor="center")
+    tree.column("Renda Mensal", width=140, anchor="center")
+    tree.column("INSS", width=100, anchor="center")
+    tree.column("ICMS", width=100, anchor="center")
+    tree.column("ISS", width=100, anchor="center")
+    tree.column("Total", width=100, anchor="center")
+    
+    # Adicionar dados ao Treeview
+    for i, (renda, resultado) in enumerate(Historico, start=1):
+        tree.insert("", "end", values=(
+            f"#{i}",
+            f"R$ {renda:,.2f}",
+            f"R$ {resultado.get('INSS', 0):,.2f}",
+            f"R$ {resultado.get('ICMS', 0):,.2f}",
+            f"R$ {resultado.get('ISS', 0):,.2f}",
+            f"R$ {resultado.get('Total', 0):,.2f}"
+        ))
+    
+    # Adicionar scrollbar
+    scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
+    tree.configure(yscroll=scrollbar.set)
+    scrollbar.pack(side="right", fill="y")
+    tree.pack(fill="both", expand=True)
+    
+    # Frame para botões
+    button_frame = tk.Frame(janela_historico, bg="#1e1e1e")
+    button_frame.pack(fill="x", padx=10, pady=10)
+    
+    def limpar_historico():
+        if messagebox.askyesno("Confirmar", "Deseja limpar todo o histórico?", parent=janela_historico):
+            Historico.clear()
+            tree.delete(*tree.get_children())
+            messagebox.showinfo("Sucesso", "Histórico limpo!", parent=janela_historico)
+    
 
         
 Historico = []
@@ -119,19 +186,6 @@ for action in actions:
     if action == "Novo Relatório":
         action_btn.config(command=nova_simulacao)
     elif action == "Ver Histórico":
-        def ver_historico():
-            if not Historico:
-                messagebox.showinfo("Histórico", "Nenhuma simulação realizada ainda.", parent=root)
-                return
-            hist_text = ""
-            for i, (renda, resultado) in enumerate(Historico, start=1):
-                hist_text += (f"Simulação {i}:\n"
-                              f" Renda Mensal: R$ {renda:,.2f}\n"
-                              f" INSS: R$ {resultado.get('INSS', 0):,.2f}, "
-                              f"ICMS: R$ {resultado.get('ICMS', 0):,.2f}, "
-                              f"ISS: R$ {resultado.get('ISS', 0):,.2f}, "
-                              f"Total: R$ {resultado.get('Total', 0):,.2f}\n\n")
-            messagebox.showinfo("Histórico de Simulações", hist_text, parent=root)
         action_btn.config(command=ver_historico)
 
 # ===== FOOTER =====
