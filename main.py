@@ -26,6 +26,24 @@ def nova_simulacao():
             messagebox.showerror("Erro", "Resultado inválido retornado por Impostos.calculate_taxes", parent=root)
     except Exception as e:
         messagebox.showerror("Erro", f"Ocorreu um erro durante o cálculo:\n{e}", parent=root)
+
+def ver_historico():
+    
+    simulador = tk.Tk()
+    simulador.title("Módulo de Impostos MEI")
+    simulador.geometry("640x360")
+    simulador.configure(bg="#1e1e1e")
+    simulador.resizable(True,True)
+
+    style = ttk.Style()
+    style.theme_use('clam')
+
+    header_frame = tk.Frame(simulador, bg="#0d47a1", height=80)
+    header_frame.pack(fill="x", padx=0, pady=0)
+    header_frame.pack_propagate(False)
+    
+    simulador.mainloop()
+
         
 Historico = []
 # Configuracao da janela principal
@@ -51,9 +69,6 @@ title_label.pack(pady=15)
 menu_frame = tk.Frame(root, bg="#2d2d2d", height=50)
 menu_frame.pack(fill="x", padx=0, pady=0)
 menu_frame.pack_propagate(False)
-
-
-
 
 buttons_menu = ["Nova Simulacao", "Configurações", "Sair"]
 for btn_text in buttons_menu:
