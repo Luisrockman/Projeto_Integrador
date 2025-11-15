@@ -203,7 +203,7 @@ title_card2.pack(anchor="w", pady=(0, 10))
 button_frame = tk.Frame(card2, bg="#2d2d2d")
 button_frame.pack(anchor="w")
 
-actions = ["Novo Relatório", "Ver Histórico", "Exportar"]
+actions = ["Novo Relatório", "Ver Histórico"]
 for action in actions:
     action_btn = tk.Button(button_frame, text=action, bg="#4CAF50", fg="white",
                            font=("Arial", 10, "bold"), relief="flat", padx=15, pady=8,
